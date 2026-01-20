@@ -118,5 +118,52 @@ docker run -d --name logstash --add-host=host.docker.internal:host-gateway ...
 ![Результат](img/kibana-nginx-logs.png)
 
 
+## Задание 4
+
+Установите и запустите Filebeat. Переключите поставку логов Nginx с Logstash на Filebeat.  
+Приведите скриншот интерфейса Kibana, на котором видны логи Nginx, которые были отправлены через Filebeat.
+
+**Решение:**
+
+Filebeat был установлен и настроен на чтение access-лога Nginx (`/var/log/nginx/access.log`) с отправкой напрямую в Elasticsearch.
+
+Конфигурационный файл `filebeat.yml`:
+
+```yaml
+filebeat.inputs:
+- type: filestream
+  enabled: true
+  paths:
+    - /var/log/nginx/access.log
+
+setup.kibana:
+  host: "http://84.252.135.204:5601"
+
+output.elasticsearch:
+  hosts: ["http://84.252.135.204:9200"]
+```
+
+Filebeat запущен в Docker-контейнере:
+```bash
+docker run -d \
+  --name filebeat \
+  --user=root \
+  -v $(pwd)/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro \
+  -v /var/log/nginx:/var/log/nginx:ro \
+  docker.elastic.co/beats/filebeat:8.12.0 \
+  filebeat -e -strict.perms=false
+```
+
+Сгенерирован тестовый трафик к Nginx:
+```bash
+for i in {1..10}; do curl -s http://localhost > /dev/null; done
+```
+
+В Kibana создан Data View filebeat-* (или использован существующий), и открыта вкладка Discover.
+
+На скриншоте ниже видны логи Nginx, отправленные через Filebeat: распарсены метод запроса `(GET)`, статус ответа (`200`), IP-адрес клиента и другие поля.
+
+![Результат](img/kibana-filebeat-nginx.png)
+
 
 
