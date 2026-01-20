@@ -159,7 +159,7 @@ docker run -d \
 for i in {1..10}; do curl -s http://localhost > /dev/null; done
 ```
 
-В Kibana создан Data View filebeat-* (или использован существующий), и открыта вкладка Discover.
+В Kibana создан Data View filebeat-*  и открыта вкладка Discover.
 
 На скриншоте ниже видны логи Nginx, отправленные через Filebeat: распарсены метод запроса `(GET)`, статус ответа (`200`), IP-адрес клиента и другие поля.
 
