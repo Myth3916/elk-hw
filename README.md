@@ -64,3 +64,59 @@ GET /_cluster/health?pretty
 
 
 
+## Задание 3
+
+Установите и запустите Logstash и Nginx. С помощью Logstash отправьте access-лог Nginx в Elasticsearch.  
+Приведите скриншот интерфейса Kibana, на котором видны логи Nginx.
+
+**Решение:**
+
+Установлен Nginx и сгенерирован тестовый трафик:
+```bash
+for i in {1..10}; do curl -s http://localhost > /dev/null; done
+```
+
+Logstash настроен на чтение /var/log/nginx/access.log и отправку в Elasticsearch через конфигурацию:
+
+```conf
+input {
+  file {
+    path => "/var/log/nginx/access.log"
+    start_position => "beginning"
+    sincedb_path => "/dev/null"
+  }
+}
+filter {
+  grok {
+    match => { "message" => "%{COMBINEDAPACHELOG}" }
+  }
+  date {
+    match => [ "timestamp", "dd/MMM/yyyy:HH:mm:ss Z" ]
+    target => "@timestamp"
+  }
+}
+output {
+  elasticsearch {
+    hosts => ["http://host.docker.internal:9200"]
+    index => "nginx-access-%{+YYYY.MM.dd}"
+  }
+}
+```
+
+Запущен в Docker:
+
+```bash
+docker run -d --name logstash --add-host=host.docker.internal:host-gateway ...
+```
+
+Данные успешно попали в Elasticsearch (индекс nginx-access-2026.01.20 создан).
+
+В Kibana создан Data View nginx-access-* и открыта вкладка Discover.
+
+Результат:
+
+![Результат](img/kibana-nginx-logs.png)
+
+
+
+
