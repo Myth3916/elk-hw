@@ -32,5 +32,35 @@ curl -X GET 'localhost:9200/_cluster/health?pretty'
 ![Результат выполнения curl](img/screen_curl.png)
 
 
+## Задание 2
+
+Установите и запустите Kibana.  
+Приведите скриншот интерфейса Kibana на странице `http://<ip вашего сервера>:5601/app/dev_tools#/console`, где будет выполнен запрос `GET /_cluster/health?pretty`.
+
+**Решение:**
+
+Kibana была запущена в Docker-контейнере с использованием host-сети для прямого доступа к Elasticsearch, работающему на том же хосте:
+
+```bash
+docker run -d \
+  --name kibana \
+  --network host \
+  -e ELASTICSEARCH_HOSTS="http://localhost:9200" \
+  docker.elastic.co/kibana/kibana:8.12.0
+```
+В браузере перешёл по адресу:
+>http://158.160.221.234:5601/app/dev_tools#/console
+
+В консоли Dev Tools выполнил запрос:
+
+```bash
+GET /_cluster/health?pretty
+```
+
+На скриншоте ниже виден результат выполнения запроса — в частности, нестандартное значение `cluster_name`, подтверждающее корректную работу связки Kibana + Elasticsearch.
+
+![Результат выполнения GET](img/kibana-dev-tools.png
+)
+
 
 
